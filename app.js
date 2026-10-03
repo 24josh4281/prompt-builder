@@ -393,11 +393,29 @@
     return { template, fields };
   }
   function templateToEditable(template) { return template.replace(/\{\{(.+?)\}\}/g, "[$1]"); }
+  // per-field example/multiline settings typed in the editor (survive re-renders while typing the template)
+  let editorFieldMeta = {};
+  function readEditorFieldMeta() {
+    el.cFields.querySelectorAll(".xfield").forEach((row) => {
+      editorFieldMeta[row.dataset.ckey] = {
+        example: row.querySelector("[data-cex]").value,
+        multiline: row.querySelector("[data-cml]").checked,
+      };
+    });
+  }
   function renderExtracted() {
+    readEditorFieldMeta();
     const { fields } = parseCustomTemplate(el.cTemplate.value);
-    el.cCount.textContent = fields.length ? `${fields.length}개` : "";
+    el.cCount.textContent = fields.length ? `${fields.length}개 · 예시는 입력칸의 안내 문구로 쓰여요` : "";
     el.cFields.innerHTML = fields.length
-      ? fields.map((f) => `<span class="chip">${escapeHtml(f.key)}</span>`).join("")
+      ? fields.map((f, i) => {
+          const meta = editorFieldMeta[f.key] || { example: "", multiline: f.multiline };
+          return `<div class="xfield" data-ckey="${escapeHtml(f.key)}">
+            <span class="chip">${escapeHtml(f.key)}</span>
+            <input data-cex placeholder="예시 (선택)" value="${escapeHtml(meta.example)}">
+            <label class="xcheck"><input type="checkbox" data-cml${meta.multiline ? " checked" : ""}> 여러 줄</label>
+          </div>`;
+        }).join("")
       : `<span class="chip warn">[대괄호]로 감싼 빈칸이 아직 없어요</span>`;
   }
   function openCustomEditor(prompt) {
@@ -407,6 +425,9 @@
     el.cCategory.value = prompt ? prompt.category : "";
     el.cTemplate.value = prompt ? templateToEditable(prompt.template) : "";
     el.customDelete.hidden = !prompt;
+    editorFieldMeta = {};
+    if (prompt) prompt.fields.forEach((f) => { editorFieldMeta[f.key] = { example: f.example || "", multiline: !!f.multiline }; });
+    el.cFields.innerHTML = "";
     renderExtracted();
     openDialog(el.customDialog);
     setTimeout(() => el.cTitle.focus(), 50);
@@ -415,8 +436,9 @@
     const { template, fields } = parseCustomTemplate(el.cTemplate.value.trim());
     const id = el.cId.value || `u-${Date.now().toString(36)}`;
     const existing = state.custom.find((p) => p.id === id);
-    // keep examples/multiline the user had for unchanged keys
-    if (existing) fields.forEach((f) => { const old = existing.fields.find((o) => o.key === f.key); if (old) { f.example = old.example; f.multiline = old.multiline; } });
+    // apply example/multiline settings from the editor rows (Design §2.1 "예시 입력")
+    readEditorFieldMeta();
+    fields.forEach((f) => { const m = editorFieldMeta[f.key]; if (m) { f.example = m.example.trim(); f.multiline = m.multiline; } });
     const prompt = {
       id, part: CUSTOM_PART, partTitle: CUSTOM_PART_TITLE, custom: true,
       category: el.cCategory.value.trim(), title: el.cTitle.value.trim(),
@@ -503,6 +525,7 @@
   el.prevBtn.addEventListener("click", () => goStep(-1));
   el.nextBtn.addEventListener("click", () => goStep(1));
   el.search.addEventListener("input", () => { state.query = el.search.value; renderList(); });
+  el.fields.addEventListener("submit", (e) => e.preventDefault()); // Enter in a single-input form must not reload
   el.fields.addEventListener("input", (e) => {
     const t = e.target;
     if (!t.dataset.key) return;

@@ -58,7 +58,7 @@ PROMPTS(내장) ∪ store[pb:custom] ──► ALL ──► list/search/select 
 store[pb:project] ──► profile ──┐
 state.values ───────────────────┴─► resolveValues(prompt) ─► compile ─► preview/copy
 [다음 단계] ─► nextStep = ALL.find(workflow.id==cur.id && step==cur.step+1)
-            ─► carry: for key in next.fields: if !next.values[key] && cur.values[key] → copy
+            ─► carry: for key in next.fields (type ≠ previous): if !next.values[key] && cur.values[key] → copy
             ─► select(next.id) + toast("이전 단계 AI 결과를 붙여 넣으세요")
 custom-dialog save ─► parse [빈칸] → fields → upsert store[pb:custom] → renderList
 ```
@@ -159,7 +159,7 @@ for field in prompt.fields:
 
 ### 8.2 L2: UI Action
 1. 프로필 저장 → 8-1 열기 → 클라이언트 필드 자동값·배지 표시, 미리보기에 삽입
-2. 8-1 "거버닝 메시지" 입력 → [다음 단계] → 8-2 같은 키 자동 채움, previous 필드 최상단
+2. 8-1 "클라이언트" 칸에 프로필과 다른 값을 직접 입력 → [다음 단계] → 8-2 같은 키(클라이언트)에 그 값이 자동 채움, previous 필드 최상단
 3. 프레임워크 datalist에서 "SCQA" 선택 → 미리보기 반영
 4. 내 프롬프트 생성(`[고객사]`, `[목표]`) → 목록 표시 → 폼 2개 → 복사 → 편집 제목 변경 → 삭제
 5. 기존 1-1, 3-3, 5-3 기존 동작 확인
@@ -203,3 +203,4 @@ README.md                   (수정)
 | 버전 | 날짜 | 변경 |
 |------|------|------|
 | 0.1 | 2026-10-03 | 초안, 옵션 C 선택 |
+| 0.2 | 2026-10-03 | 갭 분석 반영: carry 규칙에 previous 제외 명시, §8.2-2 테스트 문구 정정, 내 프롬프트 예시 입력 UI 구현 |

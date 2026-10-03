@@ -381,3 +381,10 @@ button.ghost.danger { color: var(--danger); border-color: color-mix(in srgb, var
   .copy-bar .primary { flex: 2; }
   .stepper { margin-top: 12px; }
 }
+
+/* custom editor: per-field example rows */
+.xfield { display: grid; grid-template-columns: minmax(90px, auto) 1fr auto; gap: 8px; align-items: center; width: 100%; }
+.xfield input[data-cex] { padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); font-size: 13px; }
+.xcheck { font-size: 12px; color: var(--fg-muted); white-space: nowrap; display: inline-flex; gap: 4px; align-items: center; }
+.chips:has(.xfield) { flex-direction: column; gap: 8px; }
+@media (max-width: 599px) { .xfield { grid-template-columns: 1fr; } }
