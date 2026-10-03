@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>프롬프트 완성기</title>
+  <meta name="description" content="직장인을 위한 AI 프롬프트 45 — 상황을 고르고 빈칸을 채우면 완성된 프롬프트를 바로 복사할 수 있어요.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button id="back-btn" class="icon-btn only-mobile" type="button" aria-label="목록으로" hidden>←</button>
+    <div class="brand">
+      <span class="brand-title">프롬프트 완성기</span>
+      <span class="brand-sub">직장인을 위한 AI 프롬프트 45</span>
+    </div>
+    <div class="search-wrap">
+      <input id="search" type="search" placeholder="상황·키워드 검색  (예: 회의록, 보고서, 카피)" autocomplete="off" aria-label="프롬프트 검색">
+      <kbd class="only-desktop">/</kbd>
+    </div>
+    <button id="theme-btn" class="icon-btn" type="button" aria-label="테마 전환" title="테마 전환">◐</button>
+  </header>
+
+  <div class="layout" id="layout" data-view="list">
+    <aside class="list" id="list" aria-label="프롬프트 목록">
+      <div id="list-body"></div>
+      <p id="list-empty" class="empty" hidden>검색 결과가 없어요. 다른 단어로 찾아보세요.</p>
+    </aside>
+
+    <main class="detail" id="detail">
+      <div id="detail-empty" class="empty detail-empty">
+        <p>왼쪽 목록에서 지금 내 상황과 가장 가까운 프롬프트를 골라주세요.</p>
+      </div>
+
+      <article id="detail-body" hidden>
+        <section class="meta">
+          <div class="badges">
+            <span class="badge part" id="d-part"></span>
+            <span class="badge cat" id="d-cat" hidden></span>
+          </div>
+          <h1 id="d-title"></h1>
+          <ul class="benefits" id="d-benefits"></ul>
+          <div class="notice" id="d-notice" hidden></div>
+        </section>
+
+        <div class="work">
+          <section class="form-pane" aria-label="입력">
+            <div class="pane-head">
+              <h2>이것만 채우세요</h2>
+              <span class="progress" id="d-progress"></span>
+            </div>
+            <form id="fields" autocomplete="off"></form>
+            <div class="form-actions">
+              <button type="button" id="fill-btn" class="ghost">예시로 채우기</button>
+              <button type="button" id="reset-btn" class="ghost">초기화</button>
+            </div>
+          </section>
+
+          <section class="preview-pane" aria-label="완성 프롬프트">
+            <div class="pane-head">
+              <h2>완성 프롬프트</h2>
+              <span class="hint only-desktop">Ctrl/⌘ + Enter 로 복사</span>
+            </div>
+            <pre id="preview" tabindex="0"></pre>
+            <div class="copy-bar">
+              <button type="button" id="copy-btn" class="primary">프롬프트 복사</button>
+              <span class="missing-note" id="d-missing" hidden></span>
+            </div>
+          </section>
+        </div>
+
+        <footer class="article" id="d-article" hidden></footer>
+      </article>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="data/prompts.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
