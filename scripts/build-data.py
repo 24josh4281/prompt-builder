@@ -9,6 +9,9 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PARTS = sorted(glob.glob(os.path.join(ROOT, "data", "parts", "*.json")))
 PH = re.compile(r"\{\{(.+?)\}\}")
 LABELS = ("[역할]", "[업무 배경]", "[요청 사항]", "[출력 형식]")
+FIELD_TYPES = {"text", "select", "project", "previous"}
+PROJECT_KEYS = {"client", "industry", "project", "audience", "deckType", "tone"}
+workflows = {}
 
 
 def sort_key(p):
@@ -43,13 +46,31 @@ for p in items:
     for req in ("title", "template", "partTitle"):
         if not str(p.get(req, "")).strip():
             errors.append(f"{p['id']}: empty {req}")
-    if not (1 <= int(p["part"]) <= 7):
+    if not (1 <= int(p["part"]) <= 8):
         errors.append(f"{p['id']}: bad part {p['part']}")
     if "\t" in p["template"]:
         errors.append(f"{p['id']}: tab in template")
     for lab in LABELS:
         if lab not in p["template"]:
             errors.append(f"{p['id']}: missing section label {lab}")
+    # v2 field types
+    for f in p["fields"]:
+        t = f.get("type", "text")
+        if t not in FIELD_TYPES:
+            errors.append(f"{p['id']}/{f['key']}: bad type {t}")
+        if t == "select" and len(f.get("options", [])) < 2:
+            errors.append(f"{p['id']}/{f['key']}: select needs >= 2 options")
+        if t == "project" and f.get("projectKey") not in PROJECT_KEYS:
+            errors.append(f"{p['id']}/{f['key']}: bad projectKey {f.get('projectKey')}")
+    wf = p.get("workflow")
+    if wf:
+        workflows.setdefault(wf["id"], []).append((wf["step"], wf["total"], p["id"]))
+
+for wid, steps in workflows.items():
+    nums = sorted(s for s, _, _ in steps)
+    total = {t for _, t, _ in steps}
+    if len(total) != 1 or nums != list(range(1, nums[-1] + 1)) or nums[-1] != total.pop():
+        errors.append(f"workflow {wid}: steps {nums} not contiguous 1..total")
 
 print(f"prompts: {len(items)}")
 if errors:
